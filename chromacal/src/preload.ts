@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { CalendarEvent } from './services/google-calendar/calendar';
+import { Calendar, CalendarEvent } from './services/google-calendar/calendar';
 
 interface AuthResponse {
   success: boolean;
@@ -11,6 +11,8 @@ interface CalendarResponse<T> {
   success: boolean;
   events?: CalendarEvent[];
   event?: CalendarEvent | null;
+  calendars?: Calendar[];
+  selectedIds?: string[];
   error?: string;
 }
 
@@ -29,6 +31,9 @@ export interface CalendarAPI {
     getTodayEvents: () => Promise<CalendarResponse<CalendarEvent[]>>;
     getUpcomingEvent: () => Promise<CalendarResponse<CalendarEvent | null>>;
     getNextHourEvents: () => Promise<CalendarResponse<CalendarEvent[]>>;
+    listCalendars: () => Promise<CalendarResponse<Calendar[]>>;
+    getSelectedCalendars: () => Promise<CalendarResponse<string[]>>;
+    setSelectedCalendars: (calendarIds: string[]) => Promise<CalendarResponse<void>>;
   };
 }
 
@@ -45,6 +50,10 @@ contextBridge.exposeInMainWorld(
       getTodayEvents: () => ipcRenderer.invoke('calendar:getTodayEvents'),
       getUpcomingEvent: () => ipcRenderer.invoke('calendar:getUpcomingEvent'),
       getNextHourEvents: () => ipcRenderer.invoke('calendar:getNextHourEvents'),
+      listCalendars: () => ipcRenderer.invoke('calendar:listCalendars'),
+      getSelectedCalendars: () => ipcRenderer.invoke('calendar:getSelectedCalendars'),
+      setSelectedCalendars: (calendarIds: string[]) =>
+        ipcRenderer.invoke('calendar:setSelectedCalendars', { calendarIds }),
     },
   } as CalendarAPI
 );

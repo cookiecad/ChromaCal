@@ -43,29 +43,60 @@ class TokenStorage {
   }
 
   public saveTokens(tokens: TokenData): void {
+    console.log('💾 Saving tokens to storage...');
     const tokenData: TokenData = {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expiry_date: tokens.expiry_date
     };
+    console.log('📝 Token data:', {
+      hasAccessToken: !!tokenData.access_token,
+      hasRefreshToken: !!tokenData.refresh_token,
+      expiryDate: new Date(tokenData.expiry_date).toISOString()
+    });
     (this.store as any).set('tokens', tokenData);
+    console.log('✅ Tokens saved successfully');
   }
 
   public getTokens(): TokenData | null {
-    return (this.store as any).get('tokens');
+    console.log('🔍 Retrieving tokens from storage...');
+    const tokens = (this.store as any).get('tokens');
+    if (tokens) {
+      console.log('📝 Retrieved tokens:', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+        expiryDate: new Date(tokens.expiry_date).toISOString()
+      });
+    } else {
+      console.log('ℹ️ No tokens found in storage');
+    }
+    return tokens;
   }
 
   public clearTokens(): void {
-    (this.store as any).delete('tokens');
+    console.log('🗑️ Clearing all stored tokens...');
+    (this.store as any).clear();  // Clear all stored data
+    (this.store as any).set('tokens', null);  // Explicitly set tokens to null
+    console.log('✅ Token storage cleared');
   }
 
   public hasValidTokens(): boolean {
+    console.log('🔍 Checking token validity...');
     const tokens = this.getTokens();
-    if (!tokens) return false;
+    if (!tokens || !tokens.access_token || !tokens.refresh_token) {
+      console.log('❌ Missing required tokens');
+      return false;
+    }
 
     // Check if tokens are expired (with 5 minute buffer)
     const now = Date.now();
-    return tokens.expiry_date > now + 5 * 60 * 1000;
+    const isValid = tokens.expiry_date > now + 5 * 60 * 1000;
+    console.log('⏰ Token expiry check:', {
+      now: new Date(now).toISOString(),
+      expiry: new Date(tokens.expiry_date).toISOString(),
+      isValid
+    });
+    return isValid;
   }
 
   public isAuthenticated(): boolean {

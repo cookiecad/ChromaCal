@@ -133,6 +133,48 @@ npm run make
 npm test
 ```
 
+### Testing Color Transitions
+
+The project includes a visual test tool for verifying color transitions:
+
+1. Run the Color Test Tool:
+```bash
+# Open the test page in your browser
+open test-colors.html
+```
+
+2. Using the Test Tool:
+- Click "Run All Tests" to see all color states in sequence
+- Each test case shows a different event scenario:
+  * No events (neutral gray)
+  * Event in 2 hours (neutral gray)
+  * Event in 45 minutes (light blue transition)
+  * Event in 20 minutes (medium blue transition)
+  * Event in 5 minutes (deep blue transition)
+  * Current event (imminent blue)
+  * After hours (soft purple)
+- Click "Reset" to return all test cases to neutral state
+
+3. Expected Color States:
+```typescript
+// Color values for verification:
+Neutral: #F5F5F5 (Light gray)
+60-10 minutes before: Gradual transition from #F5F5F5 to #E6F3FF
+10-0 minutes before: Gradual transition from #E6F3FF to #CCE5FF
+During event: #CCE5FF (Deep blue)
+After hours (6 PM+): #F0E6FF (Soft purple)
+```
+
+4. Manual Testing:
+After verifying with the test tool, test with real calendar events:
+- Create events at different times
+- Verify color transitions in the actual application
+- Test edge cases:
+  * Multiple events within the hour
+  * Events spanning across after-hours boundary
+  * Back-to-back events
+  * All-day events
+
 ## Customization Options
 
 ### Time Format

@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { googleCalendarAuth } from '../services/google-calendar/auth';
 import { googleCalendarService } from '../services/google-calendar/calendar';
+import { preferencesStorage } from '../services/storage/preferences-storage';
 
 export function setupCalendarHandlers() {
   // Authentication handlers
@@ -20,6 +21,37 @@ export function setupCalendarHandlers() {
       return { success: true, isValid };
     } catch (error) {
       console.error('Error validating token:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  // Calendar list handlers
+  ipcMain.handle('calendar:listCalendars', async () => {
+    try {
+      const calendars = await googleCalendarService.listCalendars();
+      return { success: true, calendars };
+    } catch (error) {
+      console.error('Error listing calendars:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('calendar:getSelectedCalendars', async () => {
+    try {
+      const selectedIds = preferencesStorage.getSelectedCalendarIds();
+      return { success: true, selectedIds };
+    } catch (error) {
+      console.error('Error getting selected calendars:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('calendar:setSelectedCalendars', async (_event, { calendarIds }) => {
+    try {
+      preferencesStorage.setSelectedCalendarIds(calendarIds);
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting selected calendars:', error);
       return { success: false, error: (error as Error).message };
     }
   });

@@ -40,39 +40,39 @@
   --transition-fade: 200ms ease-in-out;
 }
 
+/* Base styles */
 /* Reset & Base Styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  text-align: inherit;
 }
 
-html, body, #root {
+html, body {
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
-  font-weight: var(--font-weight-regular);
-  color: var(--color-text-primary);
-  background: var(--color-bg-neutral);
-  transition: background-color var(--transition-color);
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  background-color: var(--color-bg-neutral);
+  color: var(--color-text-primary);
 }
 
 /* App Container */
 .app-container {
-  height: 100%;
-  width: 100%;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Dashboard Layout */
@@ -81,6 +81,7 @@ body {
   height: 100%;
   display: flex;
   text-align: center;
+  min-height: 100%;
 }
 
 /* Main Content Area */
@@ -92,6 +93,40 @@ body {
   align-items: center;
   padding: var(--space-4);
   text-align: center;
+  min-height: 100%;
+}
+
+/* Settings Button */
+.settings-button {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.settings-button svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--color-text-secondary);
+}
+
+.app-container:hover .settings-button,
+.settings-button.visible {
+  opacity: 1;
+}
+
+.settings-button:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Time Display */
@@ -174,6 +209,10 @@ body {
   align-items: center;
 }
 
+.agenda-event.current {
+  background: var(--color-bg-imminent);
+}
+
 .agenda-time {
   font-size: var(--font-size-body);
   font-weight: var(--font-weight-medium);
@@ -188,10 +227,6 @@ body {
   color: var(--color-text-secondary);
   line-height: var(--line-height-body);
   text-align: left;
-}
-
-.agenda-event.current {
-  background: var(--color-bg-imminent);
 }
 
 .agenda-event.current .agenda-time,
@@ -285,12 +320,75 @@ body {
   text-align: center;
 }
 
+/* Settings */
+.settings {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.settings h1 {
+  font-size: 32px;
+  font-weight: 500;
+  margin: 0 0 var(--space-4) 0;
+}
+
+.calendar-settings {
+  background: white;
+  border-radius: 8px;
+  padding: var(--space-4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-settings h2 {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0 0 var(--space-2) 0;
+}
+
+.calendar-settings p {
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.calendar-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.calendar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.calendar-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.primary-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-accent);
+  background: rgba(0, 102, 204, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: var(--space-2);
+}
+
 /* Responsive Adjustments */
+/* Tablet Breakpoint */
 @media (max-width: 768px) {
   :root {
     --font-size-display: 64px;
     --font-size-h1: 32px;
     --font-size-h2: 24px;
+    --space-4: 24px;
+    --space-5: 32px;
   }
 
   .dashboard {
@@ -299,13 +397,59 @@ body {
 
   .main-content {
     flex: 1;
+    min-height: 60vh;
+    padding: var(--space-4);
   }
 
   .agenda {
     width: 100%;
     height: auto;
-    max-height: 320px;
+    max-height: 40vh;
     border-left: none;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: var(--space-3);
+  }
+
+  .time-container {
+    margin-bottom: var(--space-4);
+  }
+
+  .event-container {
+    margin-top: var(--space-3);
+  }
+}
+
+/* Mobile Breakpoint */
+@media (max-width: 480px) {
+  :root {
+    --font-size-display: 48px;
+    --font-size-h1: 24px;
+    --font-size-h2: 20px;
+    --font-size-body: 14px;
+    --space-4: 16px;
+    --space-5: 24px;
+  }
+
+  .main-content {
+    min-height: 50vh;
+    padding: var(--space-3);
+  }
+
+  .agenda {
+    max-height: 50vh;
+    padding: var(--space-2);
+  }
+
+  .agenda-event {
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .time-container {
+    margin-bottom: var(--space-3);
+  }
+
+  .event-container {
+    margin-top: var(--space-2);
   }
 }

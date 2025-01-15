@@ -27,15 +27,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await window.api.auth.validateToken();
       if (response.success && response.isValid) {
         setIsAuthenticated(true);
+      } else {
+        // If validation fails, clear state and stored tokens
+        setIsAuthenticated(false);
+        setError(null);
       }
     } catch (err) {
       console.error('Error checking auth status:', err);
+      setIsAuthenticated(false);
+      setError('Authentication expired. Please log in again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const login = async () => {
+    // Clear any existing state before starting new login
+    setIsAuthenticated(false);
+    setError(null);
     try {
       setError(null);
       const response = await window.api.auth.startAuth();

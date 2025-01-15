@@ -1,6 +1,22 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
+import Store from 'electron-store';
 import { setupCalendarHandlers } from './ipc/calendar-handlers';
+
+interface WindowState {
+  windowBounds: {
+    width: number;
+    height: number;
+  };
+}
+
+// Configure window state persistence
+const store = new Store<WindowState>({
+  name: 'window-state',
+  defaults: {
+    windowBounds: { width: 900, height: 600 }
+  }
+});
 
 if (require('electron-squirrel-startup')) {
   app.quit();
@@ -9,10 +25,12 @@ if (require('electron-squirrel-startup')) {
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = (): void => {
+  const { width, height } = (store as any).get('windowBounds');
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 600,
+    width,
+    height,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -22,6 +40,13 @@ const createWindow = (): void => {
     autoHideMenuBar: true,
     // Set background color to match our light theme
     backgroundColor: '#F5F5F5',
+  });
+
+  // Save window size changes
+  mainWindow.on('resize', () => {
+    if (!mainWindow) return;
+    const bounds = mainWindow.getBounds();
+    (store as any).set('windowBounds', { width: bounds.width, height: bounds.height });
   });
 
   // Load the index.html file.
