@@ -17,6 +17,13 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            output_dir: chromacal/out/make/**/*
+            artifact_name: windows-builds
+          - os: ubuntu-latest
+            output_dir: chromacal/out/make/**/*
+            artifact_name: linux-builds
         
     steps:
       - uses: actions/checkout@v4
@@ -26,25 +33,34 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: 'chromacal/package-lock.json'
           
       - name: Install Dependencies
         working-directory: ./chromacal
-        run: npm ci
+        run: |
+          npm ci
+          npm list
         
       - name: Build Application
         working-directory: ./chromacal
-        run: npm run make
-        
-      - name: Upload Artifacts
+        run: |
+          echo "Starting build process..."
+          npm run make
+          echo "Build completed. Checking output directory..."
+          ls -R out/make/
+        env:
+          DEBUG: electron-builder
+          
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-builds
-          path: chromacal/out/make/**/*
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.output_dir }}
           
-      - name: Upload to Release
+      - name: Create Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: chromacal/out/make/**/*
+          files: ${{ matrix.output_dir }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
