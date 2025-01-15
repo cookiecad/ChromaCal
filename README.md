@@ -41,3 +41,31 @@ cd ChromaCal\chromacal
 npm install
 npm start
 ```
+
+## Releasing New Versions
+
+To create a new release:
+
+1. Update version in `chromacal/package.json`
+
+2. Create and push a new tag:
+```bash
+git tag v1.0.0  # Use appropriate version number
+git push origin v1.0.0
+```
+
+3. The GitHub Action will automatically:
+   - Build the application for Windows and Linux
+   - Create installers and portable versions
+   - Upload the builds to the GitHub Release
+
+Available build outputs:
+- Windows: 
+  - Squirrel installer (.exe)
+  - Portable ZIP archive
+- Linux:
+  - .deb package (Debian/Ubuntu)
+  - .rpm package (Fedora/RHEL)
+  - Portable ZIP archive
+
+Note: Users on Windows will see an "Unknown Publisher" warning since the application is not code signed. This is normal for open source applications.
