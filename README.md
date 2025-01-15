@@ -1,5 +1,15 @@
 # ChromaCal
-A color coded agenda for people with time-blindness, or anyone that wants to see their schedule at a glance
+A color coded agenda for people with time-blindness, or anyone that wants to see their schedule at a glance.
+
+Features:
+- Syncs with Google Calendar
+- Clearly displays today's agenda and the next event
+- Color coded background to indicate how close the next event is
+- Background color changes when the day is over and its time to go home
+
+![1736974440299](image/README/1736974440299.png)
+
+![1736981944991](image/README/1736981944991.png)
 
 ## Usage
 
@@ -26,7 +36,7 @@ In order to connect to your google calendar, you'll need to create a project in 
 
 ```bash
 git clone https://github.com/cookiecad/ChromaCal.git
-cd ChromaCal
+cd ChromaCal\chromacal
 
 npm install
 npm start
