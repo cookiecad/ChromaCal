@@ -1,0 +1,311 @@
+:root {
+  /* Typography Scale */
+  --font-size-display: 96px;
+  --font-size-h1: 48px;
+  --font-size-h2: 32px;
+  --font-size-body: 16px;
+  --font-size-caption: 14px;
+
+  /* Line Heights */
+  --line-height-display: 1.1;
+  --line-height-heading: 1.25;
+  --line-height-body: 1.5;
+
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* Spacing (8px grid) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-6: 64px;
+
+  /* Colors - Following Typography Guide */
+  --color-bg-neutral: #F5F5F5;
+  --color-bg-approaching: #E6F3FF;
+  --color-bg-imminent: #CCE5FF;
+  --color-bg-afterhours: #F0E6FF;
+  
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #4A4A4A;
+  --color-text-accent: #0066CC;
+  --color-text-time: #000000;
+
+  /* Transitions */
+  --transition-color: 1000ms ease-in-out;
+  --transition-fade: 200ms ease-in-out;
+}
+
+/* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-align: inherit;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  background: var(--color-bg-neutral);
+  transition: background-color var(--transition-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+}
+
+/* App Container */
+.app-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  text-align: center;
+}
+
+/* Dashboard Layout */
+.dashboard {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  text-align: center;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+/* Time Display */
+.time-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  width: 100%;
+  text-align: center;
+}
+
+.time-display {
+  font-size: var(--font-size-display);
+  line-height: var(--line-height-display);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-time);
+  letter-spacing: -0.02em;
+  text-align: center;
+  display: block;
+}
+
+/* Event Display */
+.event-container {
+  margin-top: var(--space-4);
+  width: 100%;
+  text-align: center;
+}
+
+.event-title {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-heading);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  text-align: center;
+}
+
+.event-status {
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-heading);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* Agenda Sidebar */
+.agenda {
+  width: 320px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  padding: var(--space-4);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.agenda-title {
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-heading);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+  text-align: center;
+}
+
+.agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.agenda-event {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: 4px;
+  transition: background-color var(--transition-fade);
+  align-items: center;
+}
+
+.agenda-time {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.agenda-name {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-body);
+  text-align: left;
+}
+
+.agenda-event.current {
+  background: var(--color-bg-imminent);
+}
+
+.agenda-event.current .agenda-time,
+.agenda-event.current .agenda-name {
+  color: var(--color-text-accent);
+}
+
+.no-events {
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--space-4);
+}
+
+/* Auth Styles */
+.auth-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-bg-neutral);
+  text-align: center;
+}
+
+.auth-content {
+  max-width: 400px;
+  width: 100%;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.auth-title {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  text-align: center;
+}
+
+.auth-subtitle {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-5);
+  text-align: center;
+}
+
+.auth-actions {
+  margin-top: var(--space-4);
+  text-align: center;
+}
+
+.auth-button {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-bg-neutral);
+  background: var(--color-text-accent);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity var(--transition-fade);
+  text-align: center;
+}
+
+.auth-button:hover {
+  opacity: 0.9;
+}
+
+.auth-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading & Error States */
+.loading,
+.error-message {
+  width: 100%;
+  text-align: center;
+  font-size: var(--font-size-h2);
+  color: var(--color-text-secondary);
+}
+
+.error-message {
+  color: #CF6679;
+  padding: var(--space-3);
+  background: rgba(207, 102, 121, 0.1);
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  :root {
+    --font-size-display: 64px;
+    --font-size-h1: 32px;
+    --font-size-h2: 24px;
+  }
+
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .main-content {
+    flex: 1;
+  }
+
+  .agenda {
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}
