@@ -29,7 +29,14 @@ const getTimeUntilEvent = (event: CalendarEvent): string => {
   if (diffMinutes <= 0) {
     return 'happening now';
   }
-  // Format according to typography guide (e.g., "in 5 minutes" with proper spacing)
+  // Format according to typography guide
+  if (diffMinutes >= 60) {
+    const hours = Math.floor(diffMinutes / 60);
+    const remainingMinutes = diffMinutes % 60;
+    const hourText = `${hours}h`;
+    const minuteText = remainingMinutes > 0 ? ` ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}` : '';
+    return `In ${hourText}${minuteText}`;
+  }
   const minutes = `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
   return `in ${minutes}`.toLowerCase();
 };

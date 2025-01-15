@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar } from '../../services/google-calendar/calendar';
+import { useNavigate } from 'react-router-dom';
 
 export const Settings: React.FC = () => {
+  const navigate = useNavigate();
   const [availableCalendars, setAvailableCalendars] = useState<Calendar[]>([]);
   const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +59,15 @@ export const Settings: React.FC = () => {
 
   return (
     <div className="settings">
+      <button
+        className="back-button"
+        onClick={() => navigate('/')}
+        aria-label="Back to dashboard"
+      >
+        <svg viewBox="0 0 24 24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+      </button>
       <h1>Calendar Settings</h1>
       <div className="calendar-settings">
         <h2>Active Calendars</h2>

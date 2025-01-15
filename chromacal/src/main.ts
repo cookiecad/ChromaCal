@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
 import Store from 'electron-store';
 import { setupCalendarHandlers } from './ipc/calendar-handlers';
+import { preferencesStorage } from './services/storage/preferences-storage';
 
 interface WindowState {
   windowBounds: {
@@ -64,12 +65,27 @@ const createWindow = (): void => {
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
+// Wait for app to be ready before setting up handlers
 app.on('ready', () => {
-  // Set up IPC handlers
-  setupCalendarHandlers();
-  
-  // Create the main window
-  createWindow();
+  try {
+    console.log('🚀 App ready, initializing...');
+    
+    // Initialize preferences storage
+    console.log('📦 Initializing preferences storage...');
+    preferencesStorage.getSelectedCalendarIds(); // Force initialization
+    
+    // Set up IPC handlers
+    console.log('🔌 Setting up IPC handlers...');
+    setupCalendarHandlers();
+    
+    // Create the main window
+    console.log('🪟 Creating main window...');
+    createWindow();
+    
+    console.log('✅ App initialization complete');
+  } catch (error) {
+    console.error('❌ Error during app initialization:', error);
+  }
 });
 
 // Quit when all windows are closed.

@@ -4,6 +4,17 @@ import { googleCalendarService } from '../services/google-calendar/calendar';
 import { preferencesStorage } from '../services/storage/preferences-storage';
 
 export function setupCalendarHandlers() {
+  // Remove any existing handlers to prevent duplicates
+  ipcMain.removeHandler('auth:startAuth');
+  ipcMain.removeHandler('auth:validateToken');
+  ipcMain.removeHandler('calendar:listCalendars');
+  ipcMain.removeHandler('calendar:getSelectedCalendars');
+  ipcMain.removeHandler('calendar:setSelectedCalendars');
+  ipcMain.removeHandler('calendar:getTodayEvents');
+  ipcMain.removeHandler('calendar:getUpcomingEvent');
+  ipcMain.removeHandler('calendar:getNextHourEvents');
+
+  console.log('🔄 Setting up calendar handlers...');
   // Authentication handlers
   ipcMain.handle('auth:startAuth', async () => {
     try {
@@ -27,24 +38,30 @@ export function setupCalendarHandlers() {
 
   // Calendar list handlers
   ipcMain.handle('calendar:listCalendars', async () => {
+    console.log('📋 Handling calendar:listCalendars request');
     try {
       const calendars = await googleCalendarService.listCalendars();
+      console.log('✅ Successfully retrieved calendars');
       return { success: true, calendars };
     } catch (error) {
-      console.error('Error listing calendars:', error);
+      console.error('❌ Error listing calendars:', error);
       return { success: false, error: (error as Error).message };
     }
   });
+  console.log('✅ Registered calendar:listCalendars handler');
 
   ipcMain.handle('calendar:getSelectedCalendars', async () => {
+    console.log('📋 Handling calendar:getSelectedCalendars request');
     try {
       const selectedIds = preferencesStorage.getSelectedCalendarIds();
+      console.log('✅ Successfully retrieved selected calendar IDs:', selectedIds);
       return { success: true, selectedIds };
     } catch (error) {
-      console.error('Error getting selected calendars:', error);
+      console.error('❌ Error getting selected calendars:', error);
       return { success: false, error: (error as Error).message };
     }
   });
+  console.log('✅ Registered calendar:getSelectedCalendars handler');
 
   ipcMain.handle('calendar:setSelectedCalendars', async (_event, { calendarIds }) => {
     try {
@@ -86,4 +103,6 @@ export function setupCalendarHandlers() {
       return { success: false, error: (error as Error).message };
     }
   });
+
+  console.log('✅ All calendar handlers registered successfully');
 }
