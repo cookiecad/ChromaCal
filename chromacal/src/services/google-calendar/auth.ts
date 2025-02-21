@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, existsSync, copyFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 import { app, BrowserWindow } from 'electron';
 import { tokenStorage } from '../storage/token-storage';
 
@@ -15,13 +15,49 @@ interface Credentials {
 
 export class GoogleCalendarAuth {
   private static instance: GoogleCalendarAuth;
-  private oauth2Client: OAuth2Client;
-  private credentials: Credentials;
+  private oauth2Client: OAuth2Client | null = null;
+  private credentials: Credentials | null = null;
 
   private constructor() {
-    // Load credentials from file
-    const credPath = join(app.getAppPath(), 'client_secret_420752923285-offngbturqbccedoaiv6rv17b28gh3du.apps.googleusercontent.com.json');
-    this.credentials = JSON.parse(readFileSync(credPath, 'utf-8'));
+    this.loadCredentials();
+  }
+
+  private getCredentialsPath(): string {
+    // Use the app's user data directory for storing credentials
+    const userDataPath = app.getPath('userData');
+    return join(userDataPath, 'google-credentials.json');
+  }
+
+  private loadCredentials(): void {
+    try {
+      const credPath = this.getCredentialsPath();
+      
+      // Check if credentials exist in user data directory
+      if (!existsSync(credPath)) {
+        // Check if credentials exist in app directory (development)
+        const devCredPath = join(app.getAppPath(), 'client_secret_420752923285-offngbturqbccedoaiv6rv17b28gh3du.apps.googleusercontent.com.json');
+        if (existsSync(devCredPath)) {
+          // Copy credentials to user data directory
+          mkdirSync(dirname(credPath), { recursive: true });
+          copyFileSync(devCredPath, credPath);
+        } else {
+          console.log('No credentials file found');
+          return;
+        }
+      }
+
+      this.credentials = JSON.parse(readFileSync(credPath, 'utf-8'));
+      this.initializeOAuth2Client();
+
+    } catch (error) {
+      console.error('Error loading credentials:', error);
+      this.credentials = null;
+      this.oauth2Client = null;
+    }
+  }
+
+  private initializeOAuth2Client(): void {
+    if (!this.credentials) return;
 
     this.oauth2Client = new google.auth.OAuth2(
       this.credentials.installed.client_id,
@@ -57,19 +93,34 @@ export class GoogleCalendarAuth {
     return GoogleCalendarAuth.instance;
   }
 
+  public hasValidCredentials(): boolean {
+    return this.credentials !== null && this.oauth2Client !== null;
+  }
+
+  public getCredentialsStatus(): { exists: boolean; path: string } {
+    const credPath = this.getCredentialsPath();
+    return {
+      exists: existsSync(credPath),
+      path: credPath
+    };
+  }
+
   public async startAuthFlow(): Promise<any> {
+    if (!this.hasValidCredentials()) {
+      throw new Error('Google Calendar credentials not found. Please add credentials file to continue.');
+    }
+
     // Clear any existing tokens before starting new auth flow
     tokenStorage.clearTokens();
-    this.oauth2Client.credentials = {};
+    this.oauth2Client!.credentials = {};
 
-    const authUrl = this.oauth2Client.generateAuthUrl({
+    const authUrl = this.oauth2Client!.generateAuthUrl({
       access_type: 'offline',
       scope: ['https://www.googleapis.com/auth/calendar.readonly'],
-      prompt: 'select_account',  // Force account selection to ensure fresh authentication
-      include_granted_scopes: true  // Include previously granted scopes
+      prompt: 'select_account',
+      include_granted_scopes: true
     });
 
-    // Create a new window for auth
     const win = new BrowserWindow({
       width: 800,
       height: 600,
@@ -82,7 +133,6 @@ export class GoogleCalendarAuth {
     return new Promise((resolve, reject) => {
       let handled = false;
 
-      // Handle the OAuth callback
       const handleCallback = async (url: string) => {
         if (handled) return;
         handled = true;
@@ -92,10 +142,9 @@ export class GoogleCalendarAuth {
         
         if (code) {
           try {
-            const { tokens } = await this.oauth2Client.getToken(code);
-            this.oauth2Client.setCredentials(tokens);
+            const { tokens } = await this.oauth2Client!.getToken(code);
+            this.oauth2Client!.setCredentials(tokens);
             
-            // Save tokens
             tokenStorage.saveTokens({
               access_token: tokens.access_token!,
               refresh_token: tokens.refresh_token!,
@@ -111,51 +160,50 @@ export class GoogleCalendarAuth {
         }
       };
 
-      // Listen for redirects in the auth window
       win.webContents.on('will-redirect', (event, url) => {
-        if (url.startsWith(this.credentials.installed.redirect_uris[0])) {
+        if (url.startsWith(this.credentials!.installed.redirect_uris[0])) {
           handleCallback(url);
         }
       });
 
-      // Also listen for navigation in case of redirect handling
       win.webContents.on('will-navigate', (event, url) => {
-        if (url.startsWith(this.credentials.installed.redirect_uris[0])) {
+        if (url.startsWith(this.credentials!.installed.redirect_uris[0])) {
           handleCallback(url);
         }
       });
 
-      // Handle window close
       win.on('closed', () => {
         if (!handled) {
           reject(new Error('Authentication window was closed'));
         }
       });
 
-      // Load the auth URL
       win.loadURL(authUrl).catch(error => {
         reject(error);
       });
     });
   }
 
-  public getOAuth2Client(): OAuth2Client {
+  public getOAuth2Client(): OAuth2Client | null {
     return this.oauth2Client;
   }
 
   public async validateToken(): Promise<boolean> {
+    if (!this.hasValidCredentials()) {
+      console.log('❌ No valid credentials found');
+      return false;
+    }
+
     console.log('🔑 Validating auth token...');
     try {
       if (!tokenStorage.hasValidTokens()) {
         console.log('⚠️ No valid tokens found in storage');
-        // Try refreshing tokens if we have a refresh token
-        if (this.oauth2Client.credentials.refresh_token) {
+        if (this.oauth2Client!.credentials.refresh_token) {
           console.log('🔄 Attempting token refresh...');
           const refreshed = await this.refreshTokens();
           if (refreshed) {
             console.log('✅ Token refresh successful');
-            // Verify the refreshed token works
-            const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
+            const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client! });
             await calendar.calendarList.list();
             return true;
           }
@@ -165,18 +213,17 @@ export class GoogleCalendarAuth {
       }
 
       console.log('🔍 Testing token with calendar API...');
-      const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
+      const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client! });
       await calendar.calendarList.list();
       console.log('✅ Token validation successful');
       return true;
     } catch (error) {
       console.log('❌ Token validation failed, attempting refresh...');
-      // If validation fails, try refreshing tokens once
       try {
         const refreshed = await this.refreshTokens();
         if (refreshed) {
           console.log('✅ Recovery refresh successful');
-          const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
+          const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client! });
           await calendar.calendarList.list();
           return true;
         }
@@ -189,19 +236,18 @@ export class GoogleCalendarAuth {
   }
 
   public isAuthenticated(): boolean {
-    return tokenStorage.isAuthenticated();
+    return this.hasValidCredentials() && tokenStorage.isAuthenticated();
   }
 
   public async refreshTokens(): Promise<boolean> {
-    try {
-      if (!this.oauth2Client.credentials.refresh_token) {
-        return false;
-      }
+    if (!this.hasValidCredentials() || !this.oauth2Client!.credentials.refresh_token) {
+      return false;
+    }
 
-      const result = await this.oauth2Client.refreshAccessToken();
+    try {
+      const result = await this.oauth2Client!.refreshAccessToken();
       const tokens = result.credentials;
 
-      // Update stored tokens
       tokenStorage.saveTokens({
         access_token: tokens.access_token!,
         refresh_token: tokens.refresh_token!,

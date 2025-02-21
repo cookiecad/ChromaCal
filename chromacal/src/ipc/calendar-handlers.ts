@@ -7,6 +7,7 @@ export function setupCalendarHandlers() {
   // Remove any existing handlers to prevent duplicates
   ipcMain.removeHandler('auth:startAuth');
   ipcMain.removeHandler('auth:validateToken');
+  ipcMain.removeHandler('auth:getCredentialsStatus');
   ipcMain.removeHandler('calendar:listCalendars');
   ipcMain.removeHandler('calendar:getSelectedCalendars');
   ipcMain.removeHandler('calendar:setSelectedCalendars');
@@ -15,6 +16,7 @@ export function setupCalendarHandlers() {
   ipcMain.removeHandler('calendar:getNextHourEvents');
 
   console.log('🔄 Setting up calendar handlers...');
+  
   // Authentication handlers
   ipcMain.handle('auth:startAuth', async () => {
     try {
@@ -32,6 +34,16 @@ export function setupCalendarHandlers() {
       return { success: true, isValid };
     } catch (error) {
       console.error('Error validating token:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('auth:getCredentialsStatus', () => {
+    try {
+      const status = googleCalendarAuth.getCredentialsStatus();
+      return { success: true, status };
+    } catch (error) {
+      console.error('Error checking credentials status:', error);
       return { success: false, error: (error as Error).message };
     }
   });

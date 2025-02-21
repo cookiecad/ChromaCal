@@ -1,8 +1,8 @@
 {
   "name": "chromacal",
-  "productName": "chromacal",
+  "productName": "ChromaCal",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "A color coded agenda for people with time-blindness, or anyone that wants to see their schedule at a glance",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -21,6 +21,7 @@
     "@electron-forge/plugin-fuses": "^7.6.0",
     "@electron-forge/plugin-vite": "^7.6.0",
     "@electron/fuses": "^1.8.0",
+    "@types/electron-squirrel-startup": "^1.0.2",
     "@types/electron-store": "^3.2.2",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
@@ -32,12 +33,24 @@
     "typescript": "~4.5.4",
     "vite": "^5.4.11"
   },
-  "keywords": [],
+  "keywords": [
+    "calendar",
+    "productivity",
+    "time-management",
+    "electron",
+    "react"
+  ],
   "author": {
-    "name": "Nathan Apter",
-    "email": "napter@gmail.com"
+    "name": "Cookiecad",
+    "email": "support@cookiecad.com",
+    "url": "https://github.com/cookiecad"
   },
   "license": "MIT",
+  "homepage": "https://github.com/cookiecad/ChromaCal",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cookiecad/ChromaCal.git"
+  },
   "dependencies": {
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",

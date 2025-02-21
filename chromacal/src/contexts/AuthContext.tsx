@@ -5,6 +5,10 @@ interface AuthContextType {
   isLoading: boolean;
   login: () => Promise<void>;
   error: string | null;
+  credentialsStatus: {
+    exists: boolean;
+    path: string;
+  } | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -17,36 +21,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [credentialsStatus, setCredentialsStatus] = useState<{ exists: boolean; path: string; } | null>(null);
 
   useEffect(() => {
-    checkAuthStatus();
+    const initialize = async () => {
+      try {
+        // Get credentials status first
+        const credResponse = await window.api.auth.getCredentialsStatus();
+        if (credResponse.success && credResponse.status) {
+          setCredentialsStatus(credResponse.status);
+          
+          // Only check auth status if credentials exist
+          if (credResponse.status.exists) {
+            const response = await window.api.auth.validateToken();
+            if (response.success && response.isValid) {
+              setIsAuthenticated(true);
+            } else {
+              setIsAuthenticated(false);
+              setError(null);
+            }
+          } else {
+            setIsAuthenticated(false);
+            setError('Google Calendar credentials not found');
+          }
+        } else {
+          setError('Failed to check credentials status');
+        }
+      } catch (err) {
+        console.error('Error during initialization:', err);
+        setIsAuthenticated(false);
+        setError('Failed to initialize application');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initialize();
   }, []);
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await window.api.auth.validateToken();
-      if (response.success && response.isValid) {
-        setIsAuthenticated(true);
-      } else {
-        // If validation fails, clear state and stored tokens
-        setIsAuthenticated(false);
-        setError(null);
-      }
-    } catch (err) {
-      console.error('Error checking auth status:', err);
-      setIsAuthenticated(false);
-      setError('Authentication expired. Please log in again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const login = async () => {
-    // Clear any existing state before starting new login
+    if (!credentialsStatus?.exists) {
+      setError('Google Calendar credentials not found');
+      return;
+    }
+
     setIsAuthenticated(false);
     setError(null);
     try {
-      setError(null);
       const response = await window.api.auth.startAuth();
       if (response.success) {
         setIsAuthenticated(true);
@@ -64,6 +85,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     login,
     error,
+    credentialsStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

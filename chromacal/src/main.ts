@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import Store from 'electron-store';
 import { setupCalendarHandlers } from './ipc/calendar-handlers';
 import { preferencesStorage } from './services/storage/preferences-storage';
@@ -19,7 +20,8 @@ const store = new Store<WindowState>({
   }
 });
 
-if (require('electron-squirrel-startup')) {
+import squirrelStartup from 'electron-squirrel-startup';
+if (squirrelStartup) {
   app.quit();
 }
 
@@ -54,11 +56,18 @@ const createWindow = (): void => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(join(__dirname, '..', MAIN_WINDOW_VITE_NAME, 'index.html'));
+    // In production, load from the renderer directory
+    const rendererPath = join(__dirname, '..', MAIN_WINDOW_VITE_NAME, 'index.html');
+    if (existsSync(rendererPath)) {
+      mainWindow.loadFile(rendererPath);
+      console.log('Loaded renderer from:', rendererPath);
+    } else {
+      console.error('Failed to find renderer at:', rendererPath);
+    }
   }
 
-  // Only open DevTools in development mode when explicitly requested
-  if (process.env.NODE_ENV === 'development' && process.env.OPEN_DEVTOOLS === 'true') {
+  // Open DevTools in development mode
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.webContents.openDevTools();
   }
 };

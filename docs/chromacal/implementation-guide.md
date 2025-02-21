@@ -217,3 +217,57 @@ Colors are defined in CSS variables for easy customization:
   --color-bg-imminent: #CCE5FF;
   --color-bg-afterhours: #F0E6FF;
 }
+```
+
+## Building and Distribution
+
+### Build Configuration
+The project uses Electron Forge for building and packaging. Build configuration is in `forge.config.ts`:
+
+```typescript
+// Makers for different platforms
+makers: [
+  // Windows
+  {
+    name: '@electron-forge/maker-squirrel',
+    config: {/* Windows-specific config */}
+  },
+  // Linux
+  {
+    name: '@electron-forge/maker-deb',
+    config: {/* Debian package config */}
+  },
+  // Platform-independent
+  {
+    name: '@electron-forge/maker-zip'
+  }
+]
+```
+
+### Building Locally
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Build the application:
+```bash
+npm run make
+```
+
+This creates platform-specific builds in the `out` directory:
+- Windows: `.exe` installer and `.zip`
+- Linux: `.deb` package and `.zip`
+
+### Automated Builds
+GitHub Actions workflow (`.github/workflows/build.yml`) handles automated builds:
+- Triggers on tags and main branch
+- Builds for Windows and Linux
+- Creates GitHub releases for tags
+- Uploads build artifacts
+
+### Credentials Management
+- Credentials file (`client_secret.json`) must be present in user data directory
+- Development credentials auto-copied to user data directory
+- Clear error messages guide users through credential setup
+- Secure storage with proper encryption
